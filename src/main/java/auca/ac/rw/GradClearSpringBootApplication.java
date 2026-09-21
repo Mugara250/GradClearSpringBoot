@@ -1,4 +1,4 @@
-package auca.ac.rw.gradclearspringboot;
+package auca.ac.rw;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
