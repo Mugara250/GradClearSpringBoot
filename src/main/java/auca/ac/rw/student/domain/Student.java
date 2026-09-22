@@ -2,10 +2,7 @@ package auca.ac.rw.student.domain;
 
 import auca.ac.rw.academic.domain.Academic;
 import auca.ac.rw.base.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +12,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "students")
+@Entity
+@Table(name = "students")
 public class Student extends BaseEntity {
     @Column(name = "student_id", unique = true)
     private String studentId;
