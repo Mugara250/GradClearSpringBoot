@@ -2,11 +2,15 @@ package auca.ac.rw.student.domain;
 
 import auca.ac.rw.academic.domain.Academic;
 import auca.ac.rw.base.BaseEntity;
+import auca.ac.rw.transcript.domain.Transcript;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,4 +37,7 @@ public class Student extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "academic_id", nullable = false)
     private Academic academic;
+
+    @OneToMany(mappedBy = "student")
+    private List<Transcript> transcripts = new ArrayList<>();
 }

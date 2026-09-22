@@ -1,4 +1,4 @@
-package auca.ac.rw.course;
+package auca.ac.rw.course.domain;
 
 import auca.ac.rw.academic.domain.Academic;
 import auca.ac.rw.base.BaseEntity;

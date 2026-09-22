@@ -1,7 +1,7 @@
 package auca.ac.rw.academic.domain;
 
 import auca.ac.rw.base.BaseEntity;
-import auca.ac.rw.course.Course;
+import auca.ac.rw.course.domain.Course;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
