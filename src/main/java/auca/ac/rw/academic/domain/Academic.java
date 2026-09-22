@@ -1,11 +1,15 @@
 package auca.ac.rw.academic.domain;
 
 import auca.ac.rw.base.BaseEntity;
+import auca.ac.rw.course.Course;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +29,7 @@ public class Academic extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private Academic parent;
+
+    @OneToMany(mappedBy = "academic")
+    private List<Course> courses = new ArrayList<>();
 }
