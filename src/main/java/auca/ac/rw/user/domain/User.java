@@ -1,4 +1,4 @@
-package rw.ac.auca.user.domain;
+package auca.ac.rw.user.domain;
 
 import auca.ac.rw.base.BaseEntity;
 import auca.ac.rw.department.Department;
