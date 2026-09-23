@@ -2,6 +2,7 @@ package rw.ac.auca.user.domain;
 
 import auca.ac.rw.base.BaseEntity;
 import auca.ac.rw.department.Department;
+import auca.ac.rw.staff.domain.Staff;
 import auca.ac.rw.student.domain.Student;
 import auca.ac.rw.user.domain.UserRole;
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "users")
 public class User extends BaseEntity {
 
     @Column(nullable = false, unique = true)
@@ -31,9 +33,8 @@ public class User extends BaseEntity {
     @JoinColumn(name = "student_id")
     private Student student;       // only set when role = STUDENT
 
-    @ManyToOne
-    @JoinColumn(name = "department_id")
-    private Department department; // only set when role = DEPARTMENT_OFFICER
-
+    @OneToOne
+    @JoinColumn(name = "staff_id")
+    private Staff staff; // only set when role = DEPARTMENT_OFFICER
 
 }
