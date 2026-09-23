@@ -21,7 +21,7 @@ public class ClearanceRequest extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ClearanceStatus status;
+    private ClearanceStatus status = ClearanceStatus.PENDING;
 
     private String remarks;
 
