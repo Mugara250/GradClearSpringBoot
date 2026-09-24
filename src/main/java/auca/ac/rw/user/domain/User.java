@@ -1,10 +1,8 @@
 package auca.ac.rw.user.domain;
 
 import auca.ac.rw.base.BaseEntity;
-import auca.ac.rw.department.Department;
 import auca.ac.rw.staff.domain.Staff;
 import auca.ac.rw.student.domain.Student;
-import auca.ac.rw.user.domain.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

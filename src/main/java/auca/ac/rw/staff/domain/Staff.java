@@ -1,7 +1,7 @@
 package auca.ac.rw.staff.domain;
 
 import auca.ac.rw.base.BaseEntity;
-import auca.ac.rw.department.Department;
+import auca.ac.rw.department.domain.Department;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;

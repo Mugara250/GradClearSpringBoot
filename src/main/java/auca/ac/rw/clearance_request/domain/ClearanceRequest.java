@@ -1,7 +1,7 @@
 package auca.ac.rw.clearance_request.domain;
 
 import auca.ac.rw.base.BaseEntity;
-import auca.ac.rw.department.Department;
+import auca.ac.rw.department.domain.Department;
 import auca.ac.rw.student.domain.Student;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

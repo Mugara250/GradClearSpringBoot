@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +28,13 @@ public class Course extends BaseEntity {
     @Column(name = "credit_hours", nullable = false)
     private int creditHours;
 
-    @ManyToOne
-    @JoinColumn(name = "academic_id", nullable = false)
-    private Academic academic;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "course_scope", nullable = false)
+    private CourseScope courseScope;
+
+    @ManyToMany
+    @JoinTable(name = "course_academic",
+            joinColumns = @JoinColumn(name = "course_id"),
+    inverseJoinColumns = @JoinColumn(name = "academic_id"))
+    private Set<Academic> academics = new HashSet<>();
 }

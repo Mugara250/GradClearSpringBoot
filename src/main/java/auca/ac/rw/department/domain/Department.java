@@ -1,4 +1,4 @@
-package auca.ac.rw.department;
+package auca.ac.rw.department.domain;
 
 import auca.ac.rw.base.BaseEntity;
 import jakarta.persistence.Column;
