@@ -32,9 +32,6 @@ public class Academic extends BaseEntity {
     @JoinColumn(name = "parent_id")
     private Academic parent;
 
-    @OneToMany(mappedBy = "academic")
-    private List<Course> courses = new ArrayList<>();
-
     @ManyToMany(mappedBy = "academics")
-    private Set<Course> academicCourses = new HashSet<>();
+    private Set<Course> courses = new HashSet<>();
 }
