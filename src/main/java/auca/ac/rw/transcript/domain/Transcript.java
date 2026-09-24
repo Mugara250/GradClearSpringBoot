@@ -22,7 +22,7 @@ public class Transcript extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CourseStatus status;
+    private CourseStatus status = CourseStatus.INCOMPLETE;
 
     @Column(nullable = false)
     private String academicYear;
