@@ -13,4 +13,5 @@ public interface ClearanceRequestRepository extends JpaRepository<ClearanceReque
     List<ClearanceRequest> findByDepartment_IdAndStatus(UUID departmentId, ClearanceStatus status);
 
     boolean existsByStudentIdAndStatusNot(UUID studentId, ClearanceStatus status);
+
 }
