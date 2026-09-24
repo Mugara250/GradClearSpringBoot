@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -32,4 +34,7 @@ public class Academic extends BaseEntity {
 
     @OneToMany(mappedBy = "academic")
     private List<Course> courses = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "academics")
+    private Set<Course> academicCourses = new HashSet<>();
 }
