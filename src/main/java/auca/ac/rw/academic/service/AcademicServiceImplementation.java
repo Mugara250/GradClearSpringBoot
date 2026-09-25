@@ -43,7 +43,7 @@ public class AcademicServiceImplementation implements AcademicService{
     @Override
     public Academic findById(Academic academic) {
         return academicRepository.findById(academic.getId())
-                .orElseThrow(()-> new RuntimeException("Object not found"));
+                .orElseThrow(()-> new RuntimeException("Academic with id " + academic.getId() + " not found"));
     }
 
     @Override
