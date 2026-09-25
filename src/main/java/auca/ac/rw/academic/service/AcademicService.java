@@ -10,7 +10,7 @@ public interface AcademicService {
     Academic register(Academic academic);
     Academic update(Academic academic);
     List<Academic> findAll();
-    Academic findById();
+    Academic findById(Academic academic);
     void delete(Academic academic);
 
     List<Academic> findChildren(UUID parentId);

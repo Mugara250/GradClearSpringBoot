@@ -28,7 +28,11 @@ public class AcademicServiceImplementation implements AcademicService{
 
     @Override
     public Academic update(Academic academic) {
-        return null;
+        Academic found = findById(academic);
+        found.setName(academic.getName());
+        found.setLevel(academic.getLevel());
+        found.setParent(academic.getParent());
+        return academicRepository.save(found);
     }
 
     @Override
@@ -37,8 +41,9 @@ public class AcademicServiceImplementation implements AcademicService{
     }
 
     @Override
-    public Academic findById() {
-        return null;
+    public Academic findById(Academic academic) {
+        return academicRepository.findById(academic.getId())
+                .orElseThrow(()-> new RuntimeException("Object not found"));
     }
 
     @Override
