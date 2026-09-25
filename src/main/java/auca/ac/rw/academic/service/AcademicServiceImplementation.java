@@ -37,7 +37,7 @@ public class AcademicServiceImplementation implements AcademicService{
 
     @Override
     public List<Academic> findAll() {
-        return List.of();
+        return academicRepository.findAll();
     }
 
     @Override
@@ -48,21 +48,21 @@ public class AcademicServiceImplementation implements AcademicService{
 
     @Override
     public void delete(Academic academic) {
-
+        academicRepository.delete(academic);
     }
 
     @Override
     public List<Academic> findChildren(UUID parentId) {
-        return List.of();
+        return academicRepository.findAcademicsByParentId(parentId);
     }
 
     @Override
     public List<Academic> findByLevel(AcademicLevel level) {
-        return List.of();
+        return academicRepository.findAcademicsByLevel(level);
     }
 
     @Override
     public List<Academic> findAllFaculties() {
-        return List.of();
+        return academicRepository.findAcademicsByParentIsNull();
     }
 }
