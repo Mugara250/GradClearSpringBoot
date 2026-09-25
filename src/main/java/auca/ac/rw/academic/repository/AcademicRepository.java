@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface AcademicRepository extends JpaRepository<Academic, UUID> {
     List<Academic> findAcademicsByParentId(UUID parentId);
 
-    List<Academic> findAcademicsByAcademicLevel(AcademicLevel academicLevel);
+    List<Academic> findAcademicsByLevel(AcademicLevel academicLevel);
 
     List<Academic> findAcademicsByParentIsNull();
 }

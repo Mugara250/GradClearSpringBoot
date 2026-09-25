@@ -26,7 +26,7 @@ public class Academic extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AcademicLevel academicLevel;
+    private AcademicLevel level;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
