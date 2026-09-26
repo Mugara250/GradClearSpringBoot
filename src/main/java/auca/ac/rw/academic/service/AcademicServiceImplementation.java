@@ -73,7 +73,7 @@ public class AcademicServiceImplementation implements AcademicService{
     }
 
     @Override
-    public List<Academic> findAllFaculties() {
+    public List<Academic> findAllPrograms() {
         return academicRepository.findAcademicsByParentIsNull();
     }
 }

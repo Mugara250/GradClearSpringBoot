@@ -15,5 +15,5 @@ public interface AcademicService {
 
     List<Academic> findChildren(UUID parentId);
     List<Academic> findByLevel(AcademicLevel level);
-    List<Academic> findAllFaculties();
+    List<Academic> findAllPrograms();
 }
