@@ -17,11 +17,22 @@ public class AcademicServiceImplementation implements AcademicService{
 
     @Override
     public Academic register(Academic academic) {
-        if (academic.getLevel() == AcademicLevel.FACULTY && academic.getParent() != null) {
-            throw new IllegalStateException("A FACULTY level entry must not have a parent");
-        }
-        if (academic.getLevel() != AcademicLevel.FACULTY && academic.getParent() == null) {
-            throw new IllegalStateException(academic.getLevel() + " level entry must have a parent");
+        switch (academic.getLevel()) {
+            case PROGRAM -> {
+                if (academic.getParent() != null) {
+                    throw new IllegalStateException("A PROGRAM level entry must not have a parent");
+                }
+            }
+            case FACULTY -> {
+                if (academic.getParent() == null || academic.getParent().getLevel() != AcademicLevel.PROGRAM) {
+                    throw new IllegalStateException("A FACULTY level entry must have a PROGRAM as its parent");
+                }
+            }
+            case DEPARTMENT -> {
+                if (academic.getParent() == null || academic.getParent().getLevel() != AcademicLevel.FACULTY) {
+                    throw new IllegalStateException("A DEPARTMENT level entry must have a FACULTY as its parent");
+                }
+            }
         }
         return academicRepository.save(academic);
     }

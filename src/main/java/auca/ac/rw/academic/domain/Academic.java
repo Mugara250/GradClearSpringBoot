@@ -28,6 +28,9 @@ public class Academic extends BaseEntity {
     @Column(nullable = false)
     private AcademicLevel level;
 
+    @Column(name = "required_credits", nullable = false)
+    private int requiredCredits;
+
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private Academic parent;
