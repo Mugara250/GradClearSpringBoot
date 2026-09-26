@@ -3,6 +3,7 @@ package auca.ac.rw.academic.service;
 import auca.ac.rw.academic.domain.Academic;
 import auca.ac.rw.academic.domain.AcademicLevel;
 import auca.ac.rw.academic.repository.AcademicRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +55,9 @@ public class AcademicServiceImplementation implements AcademicService{
     @Override
     public Academic findById(Academic academic) {
         return academicRepository.findById(academic.getId())
-                .orElseThrow(()-> new RuntimeException("Academic with id " + academic.getId() + " not found"));
+                .orElseThrow(()->
+                        new ResourceNotFoundException("Academic not found with id: " + academic.getId())
+                );
     }
 
     @Override
