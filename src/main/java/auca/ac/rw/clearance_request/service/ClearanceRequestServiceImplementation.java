@@ -1,5 +1,7 @@
 package auca.ac.rw.clearance_request.service;
 
+import auca.ac.rw.academic.domain.Academic;
+import auca.ac.rw.academic.domain.AcademicLevel;
 import auca.ac.rw.clearance_request.domain.ClearanceRequest;
 import auca.ac.rw.clearance_request.domain.ClearanceStatus;
 import auca.ac.rw.clearance_request.repository.ClearanceRequestRepository;
@@ -47,13 +49,22 @@ public class ClearanceRequestServiceImplementation implements ClearanceRequestSe
 
     @Override
     public List<ClearanceRequest> initiateClearance(Student student) {
+        Academic department = student.getAcademic();
+        if (department == null || department.getLevel() != AcademicLevel.DEPARTMENT) {
+            throw new IllegalStateException("Student is not linked to a valid DEPARTMENT-level Academic entry");
+        }
+
         boolean academicallyClear = transcriptService.isStudentAcademicallyClear(student.getId());
         if (!academicallyClear) {
             throw new IllegalStateException("Student has unresolved (failed/incomplete) courses");
         }
-//        if (!Boolean.TRUE.equals(student.getCapstoneDefended())) {
-//            throw new IllegalStateException("Student has not defended their capstone project");
-//        }
+
+        int requiredCredits = department.getRequiredCredits();
+        int earnedCredits = transcriptService.getTotalPassedCredits(student.getId());
+        if (earnedCredits < requiredCredits) {
+            throw new IllegalStateException(
+                    "Student has only completed " + earnedCredits + " of " + requiredCredits + " required credits");
+        }
 
         List<Department> allDepartments = departmentRepository.findAll();
         List<ClearanceRequest> requests = allDepartments.stream()

@@ -14,4 +14,5 @@ public interface TranscriptService {
 
     List<Transcript> findByStudent(UUID studentId);
     boolean isStudentAcademicallyClear(UUID studentId);
+    int getTotalPassedCredits(UUID studentId);
 }

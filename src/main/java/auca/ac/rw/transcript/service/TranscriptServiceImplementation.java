@@ -56,4 +56,9 @@ public class TranscriptServiceImplementation implements TranscriptService{
                 studentId, List.of(CourseStatus.FAILED, CourseStatus.INCOMPLETE));
         return !hasUnresolvedCourses;
     }
+
+    @Override
+    public int getTotalPassedCredits(UUID studentId) {
+        return transcriptRepository.sumPassedCreditsByStudentId(studentId);
+    }
 }
