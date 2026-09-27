@@ -3,6 +3,7 @@ package auca.ac.rw.course.service;
 import auca.ac.rw.course.domain.Course;
 import auca.ac.rw.course.domain.CourseScope;
 import auca.ac.rw.course.repository.CourseRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public class CourseServiceImplementation implements CourseService {
     @Override
     public Course findById(Course course) {
         return courseRepository.findById(course.getId())
-                .orElseThrow(()->new RuntimeException("Course with id " + course.getId() + " not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Course with id " + course.getId() + " not found"));
     }
 
     @Override

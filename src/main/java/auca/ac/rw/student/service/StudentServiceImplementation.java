@@ -3,6 +3,7 @@ package auca.ac.rw.student.service;
 import auca.ac.rw.academic.domain.AcademicLevel;
 import auca.ac.rw.student.domain.Student;
 import auca.ac.rw.student.repository.StudentRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class StudentServiceImplementation implements StudentService{
         found.setPhoneNumber(student.getPhoneNumber());
         found.setAcademic(student.getAcademic());
         validateAcademicLevel(found);
-        return studentRepository.save(student);
+        return studentRepository.save(found);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class StudentServiceImplementation implements StudentService{
     @Override
     public Student findById(Student student) {
         return studentRepository.findById(student.getId())
-                .orElseThrow(()->new RuntimeException("Student with id " + student.getId() + " not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Student with id " + student.getId() + " not found"));
     }
 
     @Override

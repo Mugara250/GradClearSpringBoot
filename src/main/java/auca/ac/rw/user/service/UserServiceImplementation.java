@@ -1,8 +1,12 @@
 package auca.ac.rw.user.service;
 
+import auca.ac.rw.exception.InvalidCredentialsException;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import auca.ac.rw.user.domain.User;
+import auca.ac.rw.user.domain.UserRole;
 import auca.ac.rw.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +16,12 @@ import java.util.List;
 public class UserServiceImplementation implements UserService{
 
     private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public User register(User user) {
-//        theUser.setPassword(passwordEncoder.encode(theUser.getPassword()));
+        validateRoleConsistency(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -26,6 +32,7 @@ public class UserServiceImplementation implements UserService{
         found.setRole(user.getRole());
         found.setStudent(user.getStudent());
         found.setStaff(user.getStaff());
+        validateRoleConsistency(found);
         return userRepository.save(found);
     }
 
@@ -37,7 +44,7 @@ public class UserServiceImplementation implements UserService{
     @Override
     public User findById(User user) {
         return userRepository.findById(user.getId())
-                .orElseThrow(()->new RuntimeException("User with id " + user.getId() + " not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User with id " + user.getId() + " not found"));
     }
 
     @Override
@@ -49,11 +56,32 @@ public class UserServiceImplementation implements UserService{
     public User login(String loginId, String rawPassword) {
         User user = userRepository.findByStudent_StudentId(loginId)
                 .or(()-> userRepository.findByStaff_StaffId(loginId))
-                .orElseThrow(()-> new RuntimeException("Invalid credentials"));
+                .orElseThrow(()-> new InvalidCredentialsException("Invalid credentials"));
 
-//        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-//            throw new RuntimeException("Invalid credentials");
-//        }
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new InvalidCredentialsException("Invalid credentials");
+        }
         return user;
+    }
+
+    // A STUDENT user must be linked to a Student (and not a Staff), and a
+    // DEPARTMENT_OFFICER/ADMIN user must be linked to a Staff (and not a Student).
+    // Catches an inconsistent account before it ever reaches login().
+    private void validateRoleConsistency(User user) {
+        if (user.getRole() == UserRole.STUDENT) {
+            if (user.getStudent() == null) {
+                throw new IllegalStateException("A STUDENT user must be linked to a Student");
+            }
+            if (user.getStaff() != null) {
+                throw new IllegalStateException("A STUDENT user must not be linked to Staff");
+            }
+        } else {
+            if (user.getStaff() == null) {
+                throw new IllegalStateException(user.getRole() + " user must be linked to Staff");
+            }
+            if (user.getStudent() != null) {
+                throw new IllegalStateException(user.getRole() + " user must not be linked to a Student");
+            }
+        }
     }
 }

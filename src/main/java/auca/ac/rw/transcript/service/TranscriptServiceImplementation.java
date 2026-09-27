@@ -3,6 +3,7 @@ package auca.ac.rw.transcript.service;
 import auca.ac.rw.transcript.domain.CourseStatus;
 import auca.ac.rw.transcript.domain.Transcript;
 import auca.ac.rw.transcript.repository.TranscriptRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,7 @@ public class TranscriptServiceImplementation implements TranscriptService{
     @Override
     public Transcript findById(Transcript transcript) {
         return transcriptRepository.findById(transcript.getId())
-                .orElseThrow(()->new RuntimeException("Transcript with id " + transcript.getId() + " not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Transcript with id " + transcript.getId() + " not found"));
     }
 
     @Override

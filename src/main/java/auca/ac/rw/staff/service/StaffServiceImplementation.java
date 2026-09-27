@@ -2,6 +2,7 @@ package auca.ac.rw.staff.service;
 
 import auca.ac.rw.staff.domain.Staff;
 import auca.ac.rw.staff.repository.StaffRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class StaffServiceImplementation implements StaffService{
     @Override
     public Staff findById(Staff staff) {
         return staffRepository.findById(staff.getId())
-                .orElseThrow(()->new RuntimeException("Staff with id" + staff.getId() + " not found"));
+                .orElseThrow(()->new ResourceNotFoundException("Staff with id " + staff.getId() + " not found"));
     }
 
     @Override
@@ -50,7 +51,7 @@ public class StaffServiceImplementation implements StaffService{
     @Override
     public Staff findByStaffId(String staffId) {
         return staffRepository.findStaffByStaffId(staffId)
-                .orElseThrow(()-> new RuntimeException("Staff with staffId " + staffId + " not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Staff with staffId " + staffId + " not found"));
     }
 
     @Override

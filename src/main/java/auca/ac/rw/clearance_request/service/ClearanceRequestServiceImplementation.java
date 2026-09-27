@@ -5,6 +5,7 @@ import auca.ac.rw.academic.domain.AcademicLevel;
 import auca.ac.rw.clearance_request.domain.ClearanceRequest;
 import auca.ac.rw.clearance_request.domain.ClearanceStatus;
 import auca.ac.rw.clearance_request.repository.ClearanceRequestRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import auca.ac.rw.department.domain.Department;
 import auca.ac.rw.department.repository.DepartmentRepository;
 import auca.ac.rw.student.domain.Student;
@@ -39,7 +40,7 @@ public class ClearanceRequestServiceImplementation implements ClearanceRequestSe
     @Override
     public ClearanceRequest findById(ClearanceRequest request) {
         return clearanceRequestRepository.findById(request.getId())
-                .orElseThrow(()-> new RuntimeException("Clearance request with id " + request.getId() + " not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Clearance request with id " + request.getId() + " not found"));
     }
 
     @Override

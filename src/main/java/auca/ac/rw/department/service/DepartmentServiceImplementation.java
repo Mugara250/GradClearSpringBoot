@@ -2,6 +2,7 @@ package auca.ac.rw.department.service;
 
 import auca.ac.rw.department.domain.Department;
 import auca.ac.rw.department.repository.DepartmentRepository;
+import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,7 @@ public class DepartmentServiceImplementation implements DepartmentService{
     @Override
     public Department findById(Department department) {
         return departmentRepository.findById(department.getId())
-                .orElseThrow(()-> new RuntimeException("Department with id " + department.getId() + " not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Department with id " + department.getId() + " not found"));
     }
 
     @Override
