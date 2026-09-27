@@ -20,5 +20,4 @@ public class StudentDTO {
     private String email;
     private String phoneNumber;
     private UUID academicId;
-    private Boolean capstoneDefended;
 }
