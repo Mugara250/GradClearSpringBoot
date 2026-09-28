@@ -7,6 +7,7 @@ import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class StudentServiceImplementation implements StudentService{
 
     @Override
     public Student register(Student student) {
+
         validateAcademicLevel(student);
         return studentRepository.save(student);
     }
@@ -58,5 +60,10 @@ public class StudentServiceImplementation implements StudentService{
             throw new IllegalStateException(
                     "Student must be linked to a DEPARTMENT-level Academic entry, not " + student.getAcademic().getLevel());
         }
+    }
+
+    private String generateStudentId() {
+        long nextSequence = studentRepository.getNextStudentIdSequence();
+        return "STU-" + Year.now().getValue() + "-" + String.format("%04d", nextSequence);
     }
 }

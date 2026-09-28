@@ -6,6 +6,7 @@ import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,5 +58,13 @@ public class StaffServiceImplementation implements StaffService{
     @Override
     public List<Staff> findByDepartment(UUID departmentId) {
         return staffRepository.findByDepartmentsId(departmentId);
+    }
+
+    // e.g. "STF-2026-0001" — the numeric part comes from the database's
+    // own staff_id_seq (see schema.sql), not a row count, so it can never
+    // collide under concurrent registrations or drift after a delete.
+    private String generateStaffId() {
+        long nextSequence = staffRepository.getNextStaffIdSequence();
+        return "STF-" + Year.now().getValue() + "-" + String.format("%04d", nextSequence);
     }
 }
