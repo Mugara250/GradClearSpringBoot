@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+
+/*
+ * GradClear palette.
+ *   brand  - deep academic navy / royal blue (chrome, primary actions)
+ *   sky    - Tailwind's sky scale, for secondary / hover states
+ *   slate  - body text and borders on white / off-white surfaces
+ *   status - amber (PENDING), emerald (APPROVED / PASSED), red (REJECTED /
+ *            FAILED). Used only for status, so it never competes with the blue.
+ */
+@theme {
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bfd5fe;
+  --color-brand-300: #93b8fd;
+  --color-brand-400: #4c8df6;
+  --color-brand-500: #2f6ef0;
+  --color-brand-600: #2350d4;
+  --color-brand-700: #1d3fae;
+  --color-brand-800: #1a3489;
+  --color-brand-900: #13265c;
+  --color-brand-950: #0c1838;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    /* medium (500) as the base weight and a dark slate keep body text
+       easy to read; headings and labels go heavier from there */
+    @apply bg-slate-50 font-medium text-slate-800 antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-bold text-slate-900;
+  }
+}
