@@ -7,6 +7,7 @@ import auca.ac.rw.department.service.DepartmentService;
 import auca.ac.rw.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class DepartmentController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<DepartmentDTO> register(@RequestBody DepartmentDTO departmentDTO) {
         Department department = buildEntityFromDTO(departmentDTO);
         Department saved = departmentService.register(department);
@@ -56,6 +58,7 @@ public class DepartmentController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN') or @authz.isOfficerOf(#id)")
     public ApiResponse<DepartmentDTO> update(@PathVariable UUID id, @RequestBody DepartmentDTO departmentDTO) {
         Department department = buildEntityFromDTO(departmentDTO);
         department.setId(id);
@@ -68,6 +71,7 @@ public class DepartmentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Department department = new Department();
         department.setId(id);

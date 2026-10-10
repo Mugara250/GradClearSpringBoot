@@ -11,6 +11,7 @@ import auca.ac.rw.transcript.dto.TranscriptMapper;
 import auca.ac.rw.transcript.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class TranscriptController {
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<List<TranscriptDTO>> findAll() {
         List<TranscriptDTO> transcripts = transcriptService.findAll().stream()
                 .map(TranscriptMapper::toDTO)
@@ -39,6 +41,7 @@ public class TranscriptController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN') or @authz.ownsTranscript(#id)")
     public ApiResponse<TranscriptDTO> findById(@PathVariable UUID id) {
         Transcript transcript = new Transcript();
         transcript.setId(id);
@@ -51,6 +54,7 @@ public class TranscriptController {
 
     @GetMapping("/student/{studentId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN') or @authz.isSelfStudent(#studentId)")
     public ApiResponse<List<TranscriptDTO>> findByStudent(@PathVariable UUID studentId) {
         List<TranscriptDTO> transcripts = transcriptService.findByStudent(studentId).stream()
                 .map(TranscriptMapper::toDTO)
@@ -63,6 +67,7 @@ public class TranscriptController {
 
     @GetMapping("/student/{studentId}/academically-clear")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN') or @authz.isSelfStudent(#studentId)")
     public ApiResponse<Boolean> isStudentAcademicallyClear(@PathVariable UUID studentId) {
         boolean clear = transcriptService.isStudentAcademicallyClear(studentId);
         return ApiResponse.of("Academic clearance status retrieved successfully", clear);
@@ -70,6 +75,7 @@ public class TranscriptController {
 
     @GetMapping("/student/{studentId}/total-passed-credits")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN') or @authz.isSelfStudent(#studentId)")
     public ApiResponse<Integer> getTotalPassedCredits(@PathVariable UUID studentId) {
         int credits = transcriptService.getTotalPassedCredits(studentId);
         return ApiResponse.of("Total passed credits retrieved successfully", credits);
@@ -77,6 +83,7 @@ public class TranscriptController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<TranscriptDTO> add(@RequestBody TranscriptDTO transcriptDTO) {
         Transcript transcript = buildEntityFromDTO(transcriptDTO);
         Transcript saved = transcriptService.add(transcript);
@@ -88,6 +95,7 @@ public class TranscriptController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<TranscriptDTO> update(@PathVariable UUID id, @RequestBody TranscriptDTO transcriptDTO) {
         Transcript transcript = buildEntityFromDTO(transcriptDTO);
         transcript.setId(id);
@@ -100,6 +108,7 @@ public class TranscriptController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Transcript transcript = new Transcript();
         transcript.setId(id);

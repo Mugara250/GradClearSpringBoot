@@ -29,6 +29,7 @@ public class UserServiceImplementation implements UserService{
     public User update(User user) {
         User found = findById(user);
         found.setUsername(user.getUsername());
+        found.setEmail(user.getEmail());
         found.setRole(user.getRole());
         found.setStudent(user.getStudent());
         found.setStaff(user.getStaff());

@@ -27,6 +27,11 @@ public class ClearanceRequestServiceImplementation implements ClearanceRequestSe
     @Override
     public ClearanceRequest updateStatus(ClearanceRequest request) {
         ClearanceRequest found = findById(request);
+        // APPROVED is terminal. REJECTED/PENDING stay open so a rejected
+        // request can go back through PENDING -> APPROVED on resubmission.
+        if (found.getStatus() == ClearanceStatus.APPROVED) {
+            throw new IllegalStateException("Cannot change status of an already-approved clearance request");
+        }
         found.setStatus(request.getStatus());
         found.setRemarks(request.getRemarks());
         return clearanceRequestRepository.save(found);

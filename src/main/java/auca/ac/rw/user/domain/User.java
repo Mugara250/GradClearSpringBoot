@@ -27,6 +27,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private UserRole role;
 
+    // Google account an admin has linked to this user for OAuth2 login.
+    // Optional; STUDENT users can also be matched through Student.email.
+    @Column(unique = true)
+    private String email;
+
     @OneToOne
     @JoinColumn(name = "student_id")
     private Student student;       // only set when role = STUDENT

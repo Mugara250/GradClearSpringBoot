@@ -9,6 +9,7 @@ import auca.ac.rw.student.dto.StudentMapper;
 import auca.ac.rw.student.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class StudentController {
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<List<StudentDTO>> findAll() {
         List<StudentDTO> students = studentService.findAll().stream()
                 .map(StudentMapper::toDTO)
@@ -36,6 +38,7 @@ public class StudentController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN') or @authz.isSelfStudent(#id)")
     public ApiResponse<StudentDTO> findById(@PathVariable UUID id) {
         Student student = new Student();
         student.setId(id);
@@ -48,6 +51,7 @@ public class StudentController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<StudentDTO> register(@RequestBody StudentDTO studentDTO) {
         Student student = buildEntityFromDTO(studentDTO);
         Student saved = studentService.register(student);
@@ -59,6 +63,7 @@ public class StudentController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<StudentDTO> update(@PathVariable UUID id, @RequestBody StudentDTO studentDTO) {
         Student student = buildEntityFromDTO(studentDTO);
         student.setId(id);
@@ -71,6 +76,7 @@ public class StudentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Student student = new Student();
         student.setId(id);

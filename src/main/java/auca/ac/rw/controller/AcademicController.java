@@ -8,6 +8,7 @@ import auca.ac.rw.academic.service.AcademicService;
 import auca.ac.rw.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,6 +84,7 @@ public class AcademicController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<AcademicDTO> register(@RequestBody AcademicDTO academicDTO) {
         Academic academic = buildEntityFromDTO(academicDTO);
         Academic saved = academicService.register(academic);
@@ -95,6 +97,7 @@ public class AcademicController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<AcademicDTO> update(@PathVariable UUID id, @RequestBody AcademicDTO academicDTO) {
         Academic academic = buildEntityFromDTO(academicDTO);
         academic.setId(id);
@@ -107,6 +110,7 @@ public class AcademicController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Academic academic = new Academic();
         academic.setId(id);

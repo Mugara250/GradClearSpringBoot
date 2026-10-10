@@ -9,6 +9,7 @@ import auca.ac.rw.staff.dto.StaffMapper;
 import auca.ac.rw.staff.service.StaffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -26,6 +27,7 @@ public class StaffController {
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<List<StaffDTO>> findAll() {
         List<StaffDTO> staffList = staffService.findAll().stream()
                 .map(StaffMapper::toDTO)
@@ -38,6 +40,7 @@ public class StaffController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<StaffDTO> findById(@PathVariable UUID id) {
         Staff staff = new Staff();
         staff.setId(id);
@@ -50,6 +53,7 @@ public class StaffController {
 
     @GetMapping("/by-staff-id/{staffId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<StaffDTO> findByStaffId(@PathVariable String staffId) {
         Staff found = staffService.findByStaffId(staffId);
         return ApiResponse.of(
@@ -60,6 +64,7 @@ public class StaffController {
 
     @GetMapping("/department/{departmentId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<List<StaffDTO>> findByDepartment(@PathVariable UUID departmentId) {
         List<StaffDTO> staffList = staffService.findByDepartment(departmentId).stream()
                 .map(StaffMapper::toDTO)
@@ -72,6 +77,7 @@ public class StaffController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<StaffDTO> register(@RequestBody StaffDTO staffDTO) {
         Staff staff = buildEntityFromDTO(staffDTO);
         Staff saved = staffService.register(staff);
@@ -83,6 +89,7 @@ public class StaffController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<StaffDTO> update(@PathVariable UUID id, @RequestBody StaffDTO staffDTO) {
         Staff staff = buildEntityFromDTO(staffDTO);
         staff.setId(id);
@@ -95,6 +102,7 @@ public class StaffController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Staff staff = new Staff();
         staff.setId(id);

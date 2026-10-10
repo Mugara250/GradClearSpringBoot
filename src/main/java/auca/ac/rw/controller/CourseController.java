@@ -10,6 +10,7 @@ import auca.ac.rw.course.service.CourseService;
 import auca.ac.rw.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -75,6 +76,7 @@ public class CourseController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<CourseDTO> register(@RequestBody CourseDTO courseDTO) {
         Course course = buildEntityFromDTO(courseDTO);
         Course saved = courseService.register(course);
@@ -86,6 +88,7 @@ public class CourseController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
     public ApiResponse<CourseDTO> update(@PathVariable UUID id, @RequestBody CourseDTO courseDTO) {
         Course course = buildEntityFromDTO(courseDTO);
         course.setId(id);
@@ -98,6 +101,7 @@ public class CourseController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         Course course = new Course();
         course.setId(id);

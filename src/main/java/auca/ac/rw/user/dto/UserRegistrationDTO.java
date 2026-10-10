@@ -18,4 +18,5 @@ public class UserRegistrationDTO {
     private UserRole role;
     private UUID studentId;    // provide when role = STUDENT
     private UUID staffId;      // provide when role = DEPARTMENT_OFFICER or ADMIN
+    private String email;      // optional: Google account allowed to sign in as this user
 }

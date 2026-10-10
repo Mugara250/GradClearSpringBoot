@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface StaffRepository extends JpaRepository<Staff, UUID> {
     Optional<Staff> findStaffByStaffId(String staffId);
     List<Staff> findByDepartmentsId(UUID departmentId);
+    boolean existsByIdAndDepartments_Id(UUID staffId, UUID departmentId);
 
     // pulls the next value from staff_id_seq (see schema.sql) — atomic,
     // no risk of two concurrent registrations colliding on the same number.
