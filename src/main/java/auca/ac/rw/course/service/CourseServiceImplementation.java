@@ -3,6 +3,7 @@ package auca.ac.rw.course.service;
 import auca.ac.rw.course.domain.Course;
 import auca.ac.rw.course.domain.CourseScope;
 import auca.ac.rw.course.repository.CourseRepository;
+import auca.ac.rw.exception.DuplicateResourceException;
 import auca.ac.rw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class CourseServiceImplementation implements CourseService {
 
     @Override
     public Course register(Course course) {
+        validateUniqueCode(course);
         validateScope(course);
         return courseRepository.save(course);
     }
@@ -25,6 +27,7 @@ public class CourseServiceImplementation implements CourseService {
     @Override
     public Course update(Course course) {
         Course found = findById(course);
+        validateUniqueCode(course);
         found.setCourseCode(course.getCourseCode());
         found.setCourseName(course.getCourseName());
         found.setCreditHours(course.getCreditHours());
@@ -58,6 +61,18 @@ public class CourseServiceImplementation implements CourseService {
     @Override
     public List<Course> findByAcademic(UUID academicId) {
         return courseRepository.findByAcademicsId(academicId);
+    }
+
+    // course_code is unique in the database too, but checking first gives a
+    // clear 409 instead of a constraint violation surfacing as a 500. Ignores
+    // case, so "CS101" and "cs101" count as the same course.
+    private void validateUniqueCode(Course course) {
+        courseRepository.findByCourseCodeIgnoreCase(course.getCourseCode())
+                .filter(existing -> !existing.getId().equals(course.getId()))
+                .ifPresent(existing -> {
+                    throw new DuplicateResourceException(
+                            "A course with code " + existing.getCourseCode() + " already exists (" + existing.getCourseName() + ")");
+                });
     }
 
     private void validateScope(Course course) {

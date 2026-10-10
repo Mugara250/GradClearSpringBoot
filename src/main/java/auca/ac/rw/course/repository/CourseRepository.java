@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface CourseRepository extends JpaRepository<Course, UUID> {
     Optional<Course> findByCourseCode(String courseCode);
 
+    Optional<Course> findByCourseCodeIgnoreCase(String courseCode);
+
     List<Course> findByCourseScope(CourseScope courseScope);
 
     List<Course> findByAcademicsId(UUID academicsId);
