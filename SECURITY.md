@@ -55,7 +55,19 @@ In Google Cloud Console, register this as an authorized redirect URI:
 
 Flow: the browser opens `GET /oauth2/authorization/google`, is sent to Google,
 and comes back to `/login/oauth2/code/google`. `OAuth2LoginSuccessHandler` then
-answers with **the same JSON body as local login above** (`data.token` etc.).
+**redirects (302) to the frontend's callback route**, with the outcome in the URL
+fragment:
+
+```
+{FRONTEND_URL}/auth/callback#token=<JWT>&expiresAt=<ISO-8601>
+{FRONTEND_URL}/auth/callback#error=<message>
+```
+
+`FRONTEND_URL` is `gradclear.frontend-url` (env `FRONTEND_URL`, default
+`http://localhost:5173`). The path is `gradclear.frontend-callback-path`
+(`/auth/callback`). Values are form-encoded. The fragment is never sent to any
+server, so the token stays out of access logs. The frontend reads it, wipes it
+from the address bar, stores the token, and calls `/me`.
 
 **Limitation: pre-linked accounts only.** A Google login never creates a user.
 The Google account's *verified* email must match either:
@@ -63,18 +75,18 @@ The Google account's *verified* email must match either:
 1. `User.email`, which an ADMIN sets through `POST`/`PUT /api/v1/user` (`"email"` field), or
 2. for STUDENT users, the `email` on their linked `Student` record.
 
-Matching ignores case. An unknown email gets `403` ("No GradClear account is
-linked to …"), and an unverified Google email gets `401`. The reason for this
+Matching ignores case. An unknown email or an unverified Google email does not
+get a token. It is redirected with `#error=` instead ("No GradClear account is
+linked to …"). The reason for this
 rule: every GradClear user has to be tied to a real Student or Staff record and
 a role, and nothing in a Google profile tells us which. Staff records have no
 email of their own, so staff can only use Google once an admin sets `User.email`.
 
-> **Frontend TODO:** there is no frontend yet, so the handler returns JSON
-> directly. Once a SPA exists, change it to redirect to the SPA's callback route,
-> putting the token in the URL *fragment* (`#token=…`) so it stays out of server
-> logs and history. The code has a TODO at that spot. The OAuth2 handshake uses a
-> short-lived HttpSession for its `state` parameter, and that session is
-> invalidated as soon as the JWT is issued.
+> The OAuth2 handshake uses a short-lived HttpSession for its `state`
+> parameter, and that session is invalidated as soon as the JWT is issued. A
+> failure *at Google* (e.g. the user cancels) is handled by the failure
+> handler in `SecurityConfig`, which still answers with a JSON 401 on the
+> backend origin rather than redirecting to the frontend.
 
 ### First admin
 

@@ -11,7 +11,6 @@ import auca.ac.rw.student.repository.StudentRepository;
 import auca.ac.rw.user.domain.User;
 import auca.ac.rw.user.domain.UserRole;
 import auca.ac.rw.user.repository.UserRepository;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,10 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,7 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Google sign-in with dummy client credentials. The real round-trip to Google
  * can't run in a test, so this checks the two ends we own: the redirect to
  * Google is wired up, and OAuth2LoginSuccessHandler turns a (simulated)
- * Google identity into the same JWT the local login issues — or refuses it.
+ * Google identity into the same JWT the local login issues (or refuses it),
+ * delivered to the frontend's /auth/callback in the URL fragment.
  */
 @SpringBootTest(properties = {
         "spring.security.oauth2.client.registration.google.client-id=test-client-id",
@@ -85,10 +89,10 @@ class OAuth2LoginIntegrationTest {
         String email = "officer-" + suffix + "@auca.ac.rw";
         User officer = staffUser(email);
 
-        MockHttpServletResponse response = googleLogin(email, true);
+        Map<String, String> fragment = callbackFragment(googleLogin(email, true));
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        String token = JsonPath.read(response.getContentAsString(), "$.data.token");
+        String token = fragment.get("token");
+        assertThat(Instant.parse(fragment.get("expiresAt"))).isAfter(Instant.now());
         mockMvc.perform(get("/api/v1/user/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(officer.getId().toString()))
@@ -100,21 +104,20 @@ class OAuth2LoginIntegrationTest {
         String email = "student-" + suffix + "@auca.ac.rw";
         User studentUser = studentUser(email);
 
-        MockHttpServletResponse response = googleLogin(email.toUpperCase(), true);
+        String token = callbackFragment(googleLogin(email.toUpperCase(), true)).get("token");
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        assertThat((String) JsonPath.read(response.getContentAsString(), "$.data.id"))
-                .isEqualTo(studentUser.getId().toString());
+        mockMvc.perform(get("/api/v1/user/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(jsonPath("$.data.id").value(studentUser.getId().toString()));
     }
 
     @Test
     void unknownEmailIsRefusedAndNoUserIsCreated() throws Exception {
         long usersBefore = userRepository.count();
 
-        MockHttpServletResponse response = googleLogin("stranger-" + suffix + "@gmail.com", true);
+        Map<String, String> fragment = callbackFragment(googleLogin("stranger-" + suffix + "@gmail.com", true));
 
-        assertThat(response.getStatus()).isEqualTo(403);
-        assertThat(response.getContentAsString()).contains("No GradClear account is linked");
+        assertThat(fragment).doesNotContainKey("token");
+        assertThat(fragment.get("error")).contains("No GradClear account is linked");
         assertThat(userRepository.count()).isEqualTo(usersBefore);
     }
 
@@ -123,10 +126,28 @@ class OAuth2LoginIntegrationTest {
         String email = "unverified-" + suffix + "@auca.ac.rw";
         staffUser(email);
 
-        assertThat(googleLogin(email, false).getStatus()).isEqualTo(401);
+        Map<String, String> fragment = callbackFragment(googleLogin(email, false));
+
+        assertThat(fragment).doesNotContainKey("token");
+        assertThat(fragment.get("error")).contains("no verified email");
     }
 
     // --- fixtures ---------------------------------------------------------
+
+    // the handler always redirects to the frontend callback, with the outcome
+    // in the URL fragment (never the query string, so it stays out of logs)
+    private static Map<String, String> callbackFragment(MockHttpServletResponse response) {
+        assertThat(response.getStatus()).isEqualTo(302);
+        String location = response.getRedirectedUrl();
+        assertThat(location).startsWith("http://localhost:5173/auth/callback#").doesNotContain("?");
+
+        Map<String, String> params = new HashMap<>();
+        for (String pair : location.substring(location.indexOf('#') + 1).split("&")) {
+            String[] kv = pair.split("=", 2);
+            params.put(kv[0], URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+        }
+        return params;
+    }
 
     private MockHttpServletResponse googleLogin(String email, boolean verified) throws Exception {
         DefaultOAuth2User googleUser = new DefaultOAuth2User(

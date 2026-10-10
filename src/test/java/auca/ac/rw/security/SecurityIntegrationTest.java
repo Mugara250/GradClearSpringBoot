@@ -34,7 +34,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -216,6 +218,39 @@ class SecurityIntegrationTest {
                         .content("{\"status\":\"PENDING\",\"remarks\":\"resubmitted\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("PENDING"));
+    }
+
+    @Test
+    void duplicateCourseCodeIs409WithAClearMessage() throws Exception {
+        String code = "DUP-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        String body = "{\"courseCode\":\"%s\",\"courseName\":\"Original\",\"creditHours\":3,\"scope\":\"GENERAL\",\"academicIds\":[]}";
+        String token = tokenFor(admin);
+
+        mockMvc.perform(post("/api/v1/course").header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON).content(body.formatted(code)))
+                .andExpect(status().isCreated());
+
+        // same code, different case: still the same course
+        mockMvc.perform(post("/api/v1/course").header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON).content(body.formatted(code.toLowerCase())))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message", containsString("already exists")));
+    }
+
+    // this test context has no Google client configured
+    @Test
+    void googleLinkWithoutGoogleConfiguredRedirectsToCallbackWithAnError() throws Exception {
+        mockMvc.perform(get("/oauth2/authorization/google"))
+                .andExpect(status().isFound())
+                .andExpect(header().string(HttpHeaders.LOCATION, startsWith("http://localhost:5173/auth/callback#error=")))
+                .andExpect(header().string(HttpHeaders.LOCATION, containsString("isn%27t+enabled")));
+    }
+
+    @Test
+    void unknownPathIs404NotA500() throws Exception {
+        mockMvc.perform(get("/api/v1/no-such-thing").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(admin))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
     }
 
     @Test

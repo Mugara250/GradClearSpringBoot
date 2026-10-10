@@ -1,24 +1,22 @@
 package auca.ac.rw.security;
 
-import auca.ac.rw.response.ApiResponse;
 import auca.ac.rw.user.domain.User;
-import auca.ac.rw.user.dto.UserMapper;
 import auca.ac.rw.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -32,11 +30,17 @@ import java.util.Optional;
  * the Google account's *verified* email must match either
  *   1. User.email, set by an ADMIN when creating/updating the user, or
  *   2. the email on the Student record a STUDENT user is linked to.
- * Anything else gets 403. A Google login never creates a User, because a
+ * Anything else is refused. A Google login never creates a User, because a
  * GradClear user must be tied to a real Student/Staff record and a role,
  * which nothing in a Google profile can tell us.
  *
- * @version 1.0
+ * Either way the browser is sent back to the frontend's callback route:
+ *   ${gradclear.frontend-url}${gradclear.frontend-callback-path}#token=<jwt>&expiresAt=<ISO-8601>
+ *   ${gradclear.frontend-url}${gradclear.frontend-callback-path}#error=<message>
+ * The values ride in the URL fragment, which browsers never send to a
+ * server, so the token stays out of access logs and proxies.
+ *
+ * @version 2.0
  */
 @RequiredArgsConstructor
 @Component
@@ -44,8 +48,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final SecurityErrorWriter securityErrorWriter;
-    private final ObjectMapper objectMapper;
+
+    @Value("${gradclear.frontend-url}")
+    private String frontendUrl;
+
+    @Value("${gradclear.frontend-callback-path}")
+    private String callbackPath;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,30 +72,29 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         Boolean emailVerified = oauth2User.getAttribute("email_verified");
 
         if (email == null || !Boolean.TRUE.equals(emailVerified)) {
-            securityErrorWriter.write(response, HttpStatus.UNAUTHORIZED, "Unauthorized",
-                    "The Google account has no verified email address");
+            redirect(response, "error=" + encode("The Google account has no verified email address."));
             return;
         }
 
         Optional<User> linked = userRepository.findByEmailIgnoreCase(email)
                 .or(() -> userRepository.findByStudent_EmailIgnoreCase(email));
         if (linked.isEmpty()) {
-            securityErrorWriter.write(response, HttpStatus.FORBIDDEN, "Forbidden",
-                    "No GradClear account is linked to " + email + ". Ask an administrator to link it.");
+            redirect(response, "error=" + encode(
+                    "No GradClear account is linked to " + email + ". Ask an administrator to link it."));
             return;
         }
 
-        User user = linked.get();
-        JwtService.IssuedToken issuedToken = jwtService.issue(user);
+        JwtService.IssuedToken issuedToken = jwtService.issue(linked.get());
+        redirect(response, "token=" + encode(issuedToken.token())
+                + "&expiresAt=" + encode(issuedToken.expiresAt().toString()));
+    }
 
-        // TODO(frontend): once a frontend exists, redirect to its callback
-        // route instead (e.g. 302 to ${FRONTEND_URL}/auth/callback#token=...,
-        // using the URL fragment so the token stays out of server logs).
-        // Until then the token is returned directly as JSON, in the same
-        // shape as POST /api/v1/user/login.
-        response.setStatus(HttpStatus.OK.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(),
-                ApiResponse.of("Login successful", UserMapper.toDTO(user, issuedToken)));
+    private void redirect(HttpServletResponse response, String fragment) throws IOException {
+        response.sendRedirect(frontendUrl + callbackPath + "#" + fragment);
+    }
+
+    // form-encoding, which the frontend's URLSearchParams decodes
+    private static String encode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }
