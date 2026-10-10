@@ -64,7 +64,7 @@ public class CourseServiceImplementation implements CourseService {
         if (course.getCourseScope() == CourseScope.GENERAL && !course.getAcademics().isEmpty()) {
             throw new IllegalStateException("GENERAL courses must not be linked to specific Academic entries");
         }
-        if (course.getCourseScope() == CourseScope.SPECIFIC && course.getAcademics().isEmpty()) {
+        if (course.getCourseScope() == CourseScope.MAJOR && course.getAcademics().isEmpty()) {
             throw new IllegalStateException("SPECIFIC courses must be linked to at least one Academic entry");
         }
     }
