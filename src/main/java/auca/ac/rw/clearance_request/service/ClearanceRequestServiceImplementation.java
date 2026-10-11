@@ -8,6 +8,7 @@ import auca.ac.rw.clearance_request.repository.ClearanceRequestRepository;
 import auca.ac.rw.exception.ResourceNotFoundException;
 import auca.ac.rw.department.domain.Department;
 import auca.ac.rw.department.repository.DepartmentRepository;
+import auca.ac.rw.notification.ClearanceEventPublisher;
 import auca.ac.rw.student.domain.Student;
 import auca.ac.rw.transcript.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ClearanceRequestServiceImplementation implements ClearanceRequestSe
     private final ClearanceRequestRepository clearanceRequestRepository;
     private final DepartmentRepository departmentRepository;
     private final TranscriptService transcriptService;
+    private final ClearanceEventPublisher clearanceEventPublisher;
 
     @Override
     public ClearanceRequest updateStatus(ClearanceRequest request) {
@@ -32,9 +34,17 @@ public class ClearanceRequestServiceImplementation implements ClearanceRequestSe
         if (found.getStatus() == ClearanceStatus.APPROVED) {
             throw new IllegalStateException("Cannot change status of an already-approved clearance request");
         }
+        ClearanceStatus previous = found.getStatus();
         found.setStatus(request.getStatus());
         found.setRemarks(request.getRemarks());
-        return clearanceRequestRepository.save(found);
+        ClearanceRequest saved = clearanceRequestRepository.save(found);
+
+        // tell the student (via RabbitMQ -> email/SMS) when a department
+        // decides; editing remarks without changing the status sends nothing
+        if (saved.getStatus() != previous) {
+            clearanceEventPublisher.publishDecision(saved);
+        }
+        return saved;
     }
 
     @Override

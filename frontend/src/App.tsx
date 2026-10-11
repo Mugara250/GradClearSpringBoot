@@ -11,6 +11,7 @@ import { UsersPage } from './pages/admin/UsersPage'
 import { AcademicsPage } from './pages/staff/AcademicsPage'
 import { CoursesPage } from './pages/staff/CoursesPage'
 import { DepartmentsPage } from './pages/staff/DepartmentsPage'
+import { RecordResultsPage } from './pages/staff/RecordResultsPage'
 import { ReviewQueuePage } from './pages/staff/ReviewQueuePage'
 import { StudentDetailPage } from './pages/staff/StudentDetailPage'
 import { StudentsPage } from './pages/staff/StudentsPage'
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="review" element={<ReviewQueuePage />} />
             <Route path="students" element={<StudentsPage />} />
             <Route path="students/:id" element={<StudentDetailPage />} />
+            <Route path="results" element={<RecordResultsPage />} />
             <Route path="academics" element={<AcademicsPage />} />
             <Route path="courses" element={<CoursesPage />} />
             <Route path="departments" element={<DepartmentsPage />} />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router'
-import { useCurrentUser } from '../../auth/AuthContext'
+import { canRecordResults, useCurrentUser } from '../../auth/AuthContext'
 import {
   Button,
   ConfirmDelete,
@@ -32,6 +32,7 @@ export function StudentDetailPage() {
   const { id } = useParams<{ id: UUID }>()
   const user = useCurrentUser()
   const isAdmin = user.role === 'ADMIN'
+  const recordsResults = canRecordResults(user)
   const navigate = useNavigate()
   const progress = useStudentProgress(id!)
   const officer = useStaffMember(user.role === 'DEPARTMENT_OFFICER' ? user.staffId : null)
@@ -82,22 +83,34 @@ export function StudentDetailPage() {
       <StudentProgressView
         progress={progress}
         transcriptToolbar={
-          <Button size="sm" onClick={() => setTranscript('new')}>
-            Add entry
-          </Button>
-        }
-        transcriptActions={(t) => (
-          <>
-            <Button size="sm" variant="ghost" onClick={() => setTranscript(t)}>
-              Edit
-            </Button>
-            {isAdmin && (
-              <Button size="sm" variant="ghost" className="text-red-700" onClick={() => setDeletingTranscript(t)}>
-                Delete
+          recordsResults && (
+            <>
+              <Button size="sm" variant="secondary" onClick={() => setTranscript('new')}>
+                Add one entry
               </Button>
-            )}
-          </>
-        )}
+              <Button size="sm" onClick={() => navigate(`/results?student=${id}`)}>
+                Record results
+              </Button>
+            </>
+          )
+        }
+        // only the registrar (and admins) edit results; others just read them
+        transcriptActions={
+          recordsResults
+            ? (t) => (
+                <>
+                  <Button size="sm" variant="ghost" onClick={() => setTranscript(t)}>
+                    Edit
+                  </Button>
+                  {isAdmin && (
+                    <Button size="sm" variant="ghost" className="text-red-700" onClick={() => setDeletingTranscript(t)}>
+                      Delete
+                    </Button>
+                  )}
+                </>
+              )
+            : undefined
+        }
         clearanceActions={(r) => {
           // APPROVED is final on the server, so it never gets an action here
           if (!canReview(r) || r.status === 'APPROVED') return null

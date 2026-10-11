@@ -81,9 +81,10 @@ public class TranscriptController {
         return ApiResponse.of("Total passed credits retrieved successfully", credits);
     }
 
+    // recording results is the registrar's job, not every officer's
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @authz.isRegistrar()")
     public ApiResponse<TranscriptDTO> add(@RequestBody TranscriptDTO transcriptDTO) {
         Transcript transcript = buildEntityFromDTO(transcriptDTO);
         Transcript saved = transcriptService.add(transcript);
@@ -95,7 +96,7 @@ public class TranscriptController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('DEPARTMENT_OFFICER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @authz.isRegistrar()")
     public ApiResponse<TranscriptDTO> update(@PathVariable UUID id, @RequestBody TranscriptDTO transcriptDTO) {
         Transcript transcript = buildEntityFromDTO(transcriptDTO);
         transcript.setId(id);

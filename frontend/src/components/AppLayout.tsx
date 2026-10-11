@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
-import { useAuth, useCurrentUser } from '../auth/AuthContext'
+import { canRecordResults, useAuth, useCurrentUser } from '../auth/AuthContext'
 import { EXPIRY_WARNING_MS } from '../config'
-import { ROLE_LABEL, type Role } from '../lib/types'
+import { ROLE_LABEL, type Role, type User } from '../lib/types'
 import { Logo } from './Logo'
 import { Button } from './ui'
 
 interface NavItem {
   to: string
   label: string
+  /** extra condition beyond the role, e.g. being the registrar */
+  when?: (user: User) => boolean
 }
 
 // One nav set per role. These are the three dashboard "shells"; the routes
@@ -19,6 +21,7 @@ const NAV: Record<Role, NavItem[]> = {
   DEPARTMENT_OFFICER: [
     { to: '/review', label: 'Review queue' },
     { to: '/students', label: 'Students' },
+    { to: '/results', label: 'Record results', when: canRecordResults },
     { to: '/academics', label: 'Academic structure' },
     { to: '/courses', label: 'Courses' },
     { to: '/departments', label: 'Departments' },
@@ -27,6 +30,7 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/admin', label: 'Overview' },
     { to: '/review', label: 'Review queue' },
     { to: '/students', label: 'Students' },
+    { to: '/results', label: 'Record results' },
     { to: '/staff', label: 'Staff' },
     { to: '/users', label: 'Users' },
     { to: '/departments', label: 'Departments' },
@@ -41,7 +45,7 @@ export function AppLayout() {
   const [signingOut, setSigningOut] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const links = NAV[user.role].map((item) => (
+  const links = NAV[user.role].filter((item) => !item.when || item.when(user)).map((item) => (
     <NavLink
       key={item.to}
       to={item.to}

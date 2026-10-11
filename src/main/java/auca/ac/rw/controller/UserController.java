@@ -2,6 +2,7 @@ package auca.ac.rw.controller;
 
 import auca.ac.rw.response.ApiResponse;
 import auca.ac.rw.security.AuthenticatedUser;
+import auca.ac.rw.security.AuthorizationService;
 import auca.ac.rw.security.JwtService;
 import auca.ac.rw.security.TokenBlocklist;
 import auca.ac.rw.staff.domain.Staff;
@@ -34,6 +35,7 @@ public class UserController {
     private final StaffService staffService;
     private final JwtService jwtService;
     private final TokenBlocklist tokenBlocklist;
+    private final AuthorizationService authorizationService;
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
@@ -57,7 +59,7 @@ public class UserController {
         user.setId(principal.userId());
         return ApiResponse.of(
                 "Current user retrieved successfully",
-                UserMapper.toDTO(userService.findById(user))
+                withCapabilities(UserMapper.toDTO(userService.findById(user)))
         );
     }
 
@@ -126,7 +128,14 @@ public class UserController {
     public ApiResponse<UserDTO> login(@RequestBody LoginRequestDTO loginRequest) {
         User user = userService.login(loginRequest.getLoginId(), loginRequest.getPassword());
         JwtService.IssuedToken issuedToken = jwtService.issue(user);
-        return ApiResponse.of("Login successful", UserMapper.toDTO(user, issuedToken));
+        return ApiResponse.of("Login successful", withCapabilities(UserMapper.toDTO(user, issuedToken)));
+    }
+
+    // what the current user may do beyond their role, for the UI to show
+    // the right screens (the server still checks every request itself)
+    private UserDTO withCapabilities(UserDTO dto) {
+        dto.setRegistrar(authorizationService.isRegistrar(dto.getRole(), dto.getStaffId()));
+        return dto;
     }
 
     // JWTs are self-contained, so "logging out" is mostly the client throwing

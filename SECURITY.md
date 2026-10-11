@@ -112,7 +112,8 @@ All errors share the existing `ErrorResponse` shape:
 `{ "success": false, "status": 401, "error": "Unauthorized", "message": "...", "timestamp": "..." }`
 
 **`GET /api/v1/user/me`** returns the current user (the same `data` as login,
-without `token`). A frontend calls this on page load to recover identity from
+without `token`). It also carries `registrar: true|false`, which says whether this
+officer may record transcript results, so the UI can offer that screen. A frontend calls this on page load to recover identity from
 a stored token.
 
 **`POST /api/v1/user/logout`** revokes the presented token server-side, and the
@@ -158,7 +159,7 @@ linked to the caller's account.
 | Department | any logged-in user | create: ADMIN. Update: ADMIN, or an officer attached to *that* department | ADMIN |
 | Staff | staff | ADMIN | ADMIN |
 | Student | list: staff. One record: staff, or the student themself | ADMIN | ADMIN |
-| Transcript | list: staff. One record, by-student, credits, academically-clear: staff or the owning student | staff | ADMIN |
+| Transcript | list: staff. One record, by-student, credits, academically-clear: staff or the owning student | ADMIN, or an officer of the registrar's department (`gradclear.registrar-department`, default "Academic Registrar") | ADMIN |
 | Clearance request | list: staff. One record, by-student, fully-cleared: staff or the owning student. `department/{id}/pending`: ADMIN or an officer of that department | `initiate/{studentId}`: the student themself or ADMIN. `PUT {id}/status`: ADMIN, or an officer of the department the request is addressed to | ADMIN |
 | User | list: ADMIN. One record: ADMIN or self. `/me`: any logged-in user | ADMIN | ADMIN |
 

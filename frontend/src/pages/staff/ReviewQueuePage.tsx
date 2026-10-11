@@ -216,7 +216,7 @@ export function ReviewDialog({
         <Field
           label={decision === 'REJECTED' ? 'Reason for rejection' : 'Remarks (optional)'}
           error={formState.errors.remarks?.message}
-          hint={decision === 'REJECTED' ? 'The student sees this, so say what they need to resolve.' : undefined}
+          hint={decision === 'REJECTED' ? 'This is sent to the student, so say what they need to resolve.' : undefined}
         >
           {(id) => (
             <Textarea
@@ -228,6 +228,9 @@ export function ReviewDialog({
             />
           )}
         </Field>
+        {decision !== 'PENDING' && (
+          <p className="text-xs text-slate-600">The student is notified of this decision by email and SMS.</p>
+        )}
         <ErrorNotice error={update.error} />
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>

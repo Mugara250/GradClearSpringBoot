@@ -11,5 +11,25 @@ services:
     volumes:
       - gradclear-db-data:/var/lib/postgresql/data
 
+  # message broker for clearance notifications
+  # management console: http://localhost:15672 (guest / guest)
+  rabbitmq:
+    image: 'rabbitmq:4.1-management'
+    container_name: gradclear-rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  # catches every email the app sends (SMTP on 1025); inbox at http://localhost:8025
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    container_name: gradclear-mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    labels:
+      # not a service Spring Boot can auto-configure; spring.mail.* points at it
+      org.springframework.boot.ignore: 'true'
+
 volumes:
   gradclear-db-data:

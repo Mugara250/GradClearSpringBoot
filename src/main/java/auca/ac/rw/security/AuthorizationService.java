@@ -5,6 +5,7 @@ import auca.ac.rw.staff.repository.StaffRepository;
 import auca.ac.rw.transcript.repository.TranscriptRepository;
 import auca.ac.rw.user.domain.UserRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,10 @@ public class AuthorizationService {
     private final TranscriptRepository transcriptRepository;
     private final ClearanceRequestRepository clearanceRequestRepository;
     private final StaffRepository staffRepository;
+
+    // the clearance Department whose officers act as the academic registrar
+    @Value("${gradclear.registrar-department}")
+    private String registrarDepartment;
 
     // STUDENT whose own Student record has this id
     public boolean isSelfStudent(UUID studentId) {
@@ -74,6 +79,18 @@ public class AuthorizationService {
         return clearanceRequestRepository.findById(clearanceRequestId)
                 .map(r -> isOfficerOf(r.getDepartment().getId()))
                 .orElse(false);
+    }
+
+    // DEPARTMENT_OFFICER attached to the registrar's department: the office
+    // that records results on transcripts (standing in for the student
+    // portal / registration system GradClear would normally get them from)
+    public boolean isRegistrar() {
+        return currentUser().map(u -> isRegistrar(u.role(), u.staffId())).orElse(false);
+    }
+
+    public boolean isRegistrar(UserRole role, UUID staffId) {
+        return role == UserRole.DEPARTMENT_OFFICER && staffId != null
+                && staffRepository.existsByIdAndDepartments_NameIgnoreCase(staffId, registrarDepartment);
     }
 
     private Optional<AuthenticatedUser> currentUser() {

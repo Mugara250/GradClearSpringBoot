@@ -15,6 +15,7 @@ public class UserMapper {
                 user.getStaff() != null ? user.getStaff().getId() : null,
                 user.getEmail(),
                 null,
+                null,
                 null
         );
     }

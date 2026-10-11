@@ -52,6 +52,17 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
+		<!-- RabbitMQ: clearance decisions are published as events and turned
+		     into student notifications by separate consumers -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+		<!-- SMTP sending for the email notification consumer -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<!-- in-memory, TTL-bounded blocklist of logged-out token ids -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
@@ -104,6 +115,11 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers-postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-rabbitmq</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

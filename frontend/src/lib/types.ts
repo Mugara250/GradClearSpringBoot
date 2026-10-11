@@ -32,6 +32,7 @@ export interface User {
   email: string | null
   token?: string // only on login responses
   tokenExpiresAt?: string
+  registrar?: boolean // only on /me and login: officer of the registrar's office
 }
 
 export interface UserRegistration {

@@ -34,6 +34,11 @@ export function useCurrentUser(): User {
   return user
 }
 
+/** Admins, and officers of the registrar's office, record transcript results. */
+export function canRecordResults(user: User): boolean {
+  return user.role === 'ADMIN' || user.registrar === true
+}
+
 export function homePathFor(role: Role): string {
   switch (role) {
     case 'STUDENT':

@@ -7,6 +7,9 @@ import auca.ac.rw.academic.repository.AcademicRepository;
 import auca.ac.rw.clearance_request.domain.ClearanceRequest;
 import auca.ac.rw.clearance_request.domain.ClearanceStatus;
 import auca.ac.rw.clearance_request.repository.ClearanceRequestRepository;
+import auca.ac.rw.course.domain.Course;
+import auca.ac.rw.course.domain.CourseScope;
+import auca.ac.rw.course.repository.CourseRepository;
 import auca.ac.rw.department.domain.Department;
 import auca.ac.rw.department.repository.DepartmentRepository;
 import auca.ac.rw.staff.domain.Staff;
@@ -61,6 +64,7 @@ class SecurityIntegrationTest {
     @Autowired AcademicRepository academicRepository;
     @Autowired DepartmentRepository departmentRepository;
     @Autowired ClearanceRequestRepository clearanceRequestRepository;
+    @Autowired CourseRepository courseRepository;
 
     private Department library;
     private Student student;
@@ -69,6 +73,7 @@ class SecurityIntegrationTest {
     private User libraryOfficer;
     private User financeOfficer;
     private User admin;
+    private User registrar;
 
     @BeforeEach
     void setUp() {
@@ -90,6 +95,11 @@ class SecurityIntegrationTest {
         libraryOfficer = staffUser("LIB-" + s, UserRole.DEPARTMENT_OFFICER, library);
         financeOfficer = staffUser("FIN-" + s, UserRole.DEPARTMENT_OFFICER, finance);
         admin = staffUser("ADM-" + s, UserRole.ADMIN);
+
+        // officers of the department named by gradclear.registrar-department
+        Department registrarOffice = departmentRepository.findDepartmentByName("Academic Registrar")
+                .orElseGet(() -> department("Academic Registrar"));
+        registrar = staffUser("REG-" + s, UserRole.DEPARTMENT_OFFICER, registrarOffice);
     }
 
     // (a) no token on a protected endpoint -> 401 JSON, not an HTML page
@@ -251,6 +261,36 @@ class SecurityIntegrationTest {
         mockMvc.perform(get("/api/v1/no-such-thing").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(admin))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void onlyTheRegistrarAndAdminsMayRecordResults() throws Exception {
+        Course course = new Course();
+        course.setCourseCode("REC-" + UUID.randomUUID().toString().substring(0, 6));
+        course.setCourseName("Recorded Course");
+        course.setCreditHours(3);
+        course.setCourseScope(CourseScope.GENERAL);
+        course = courseRepository.save(course);
+        String body = "{\"grade\":75,\"status\":\"PASSED\",\"academicYear\":\"2025-2026\",\"studentId\":\""
+                + student.getId() + "\",\"courseId\":\"" + course.getId() + "\"}";
+
+        mockMvc.perform(post("/api/v1/transcript").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(libraryOfficer)))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/transcript").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(registrar)))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/transcript").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(admin)))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void meTellsTheUiWhetherTheCallerIsTheRegistrar() throws Exception {
+        mockMvc.perform(get("/api/v1/user/me").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(registrar))))
+                .andExpect(jsonPath("$.data.registrar").value(true));
+        mockMvc.perform(get("/api/v1/user/me").header(HttpHeaders.AUTHORIZATION, bearer(tokenFor(libraryOfficer))))
+                .andExpect(jsonPath("$.data.registrar").value(false));
     }
 
     @Test

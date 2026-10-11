@@ -29,4 +29,9 @@ public class UserDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Instant tokenExpiresAt;
+
+    // only on /me and login responses: whether this officer is the registrar
+    // (may record transcript results), so the UI can offer that screen
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean registrar;
 }
